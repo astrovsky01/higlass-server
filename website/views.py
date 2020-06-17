@@ -6,6 +6,8 @@ import os
 import os.path as op
 from pyppeteer import launch
 import tempfile
+import shutil
+import galaxy_ie_helpers as gie
 
 import tilesets.models as tm
 
@@ -122,6 +124,9 @@ def thumbnail(request: HttpRequest):
                 uuid,
                 output_file))
         loop.close()
+    new_loc = "home/higlass/projects/data" + uuid + ".png"
+    shutil.copy(output_file, new_loc)
+    gie.get(new_loc)
 
     with open(output_file, 'rb') as file:
         return HttpResponse(
