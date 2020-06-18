@@ -124,9 +124,9 @@ def thumbnail(request: HttpRequest):
                 uuid,
                 output_file))
         loop.close()
-    new_loc = "home/higlass/projects/data" + uuid + ".png"
+    new_loc = "/home/higlass/projects/data/higlass_image.png"
     shutil.copy(output_file, new_loc)
-    gie.get(new_loc)
+    gie.put(new_loc)
 
     with open(output_file, 'rb') as file:
         return HttpResponse(
