@@ -1,32 +1,51 @@
-import manage
-from bioblend.galaxy import objects
-from bioblend.galaxy import GalaxyInstance
-from bioblend.galaxy.histories import HistoryClient
-from bioblend.galaxy.datasets import DatasetClient
 import subprocess
-import argparse
-import re
-import os
-from string import Template
+import pyppeteer
+import asyncio
 import logging
-DEBUG = os.environ.get('DEBUG', "False").lower() == 'true'
-if DEBUG:
-    logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("bioblend").setLevel(logging.CRITICAL)
-log = logging.getLogger()
+import os
+import os.path as op
+from pyppeteer import launch
+import tempfile
 
+import tilesets.models as tm
 
-import django
-os.environ['DJANGO_SETTINGS_MODULE'] = "higlass_server.settings"
-django.setup()
+import higlass_server.settings as hss
 
-import tilesets.management.commands.ingest_tileset as ig
-from django.core.management import execute_from_command_line
-import clodius.cli.aggregate as cca
-import cooler.cli.zoomify as zoomify
-
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpRequest, HttpResponse, \
+    HttpResponseNotFound, HttpResponseBadRequest
 
 logger = logging.getLogger(__name__)
+
+# import manage
+# from bioblend.galaxy import objects
+# from bioblend.galaxy import GalaxyInstance
+# from bioblend.galaxy.histories import HistoryClient
+# from bioblend.galaxy.datasets import DatasetClient
+# import subprocess
+# import argparse
+# import re
+# import os
+# from string import Template
+# import logging
+# DEBUG = os.environ.get('DEBUG', "False").lower() == 'true'
+# if DEBUG:
+#     logging.basicConfig(level=logging.DEBUG)
+# logging.getLogger("bioblend").setLevel(logging.CRITICAL)
+# log = logging.getLogger()
+
+
+# import django
+# os.environ['DJANGO_SETTINGS_MODULE'] = "higlass_server.settings"
+# django.setup()
+
+# import tilesets.management.commands.ingest_tileset as ig
+# from django.core.management import execute_from_command_line
+# import clodius.cli.aggregate as cca
+# import cooler.cli.zoomify as zoomify
+
+
+# logger = logging.getLogger(__name__)
 
 def galaxy(request):
     return "Helloworld"
