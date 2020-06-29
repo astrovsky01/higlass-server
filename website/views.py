@@ -20,22 +20,23 @@ from django.http import HttpRequest, HttpResponse, \
 logger = logging.getLogger(__name__)
 
 def galaxy(request):
-    dataset_number=request.GET['d']
-    data = gie.higlass_upload(dataset_number)
-    need_more = ["bedgraph", "cooler"]
-    if data.datatype in need_more:
-        return JsonResponse({"datatype": data.datatype})
-    else:
-        data.genome_loaded()
-        data.connect()
-        if data.datatype == "mcool":
-            return data.mcool()
-        elif data.datatype == "bed":
-            return data.bedfile()
-        elif data.datatype == "bigwig":
-            return data.bigwig()
-        else: 
-            return data.bigbed()
+    return True
+    # dataset_number=request.GET['d']
+    # data = gie.higlass_upload(dataset_number)
+    # need_more = ["bedgraph", "cooler"]
+    # if data.datatype in need_more:
+    #     return JsonResponse({"datatype": data.datatype})
+    # else:
+    #     data.genome_loaded()
+    #     data.connect()
+    #     if data.datatype == "mcool":
+    #         return data.mcool()
+    #     elif data.datatype == "bed":
+    #         return data.bedfile()
+    #     elif data.datatype == "bigwig":
+    #         return data.bigwig()
+    #     else: 
+    #         return data.bigbed()
 
 def galaxy2(request):
     dataset_number=request.GET['d']
