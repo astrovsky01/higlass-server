@@ -6,8 +6,9 @@ import os
 import os.path as op
 from pyppeteer import launch
 import tempfile
+import shutil
 
-import website.gie
+import website.gie as gie
 
 import tilesets.models as tm
 
@@ -20,34 +21,33 @@ from django.http import HttpRequest, HttpResponse, \
 logger = logging.getLogger(__name__)
 
 def galaxy(request):
-    return True
-    # dataset_number=request.GET['d']
-    # data = gie.higlass_upload(dataset_number)
-    # need_more = ["bedgraph", "cooler"]
-    # if data.datatype in need_more:
-    #     return JsonResponse({"datatype": data.datatype})
-    # else:
-    #     data.genome_loaded()
-    #     data.connect()
-    #     if data.datatype == "mcool":
-    #         return data.mcool()
-    #     elif data.datatype == "bed":
-    #         return data.bedfile()
-    #     elif data.datatype == "bigwig":
-    #         return data.bigwig()
-    #     else: 
-    #         return data.bigbed()
+    dataset_number=request.GET['d']
+    data = gie.higlass_upload(dataset_number)
+    values = ["bedgraph", "cooler"]
+    if data.datatype in values:
+        return JsonResponse({"datatype": data.datatype})
+    else:
+        data.genome_loaded()
+        data.connect()
+        if data.datatype == "mcool":
+            return data.mcool()
+        elif data.datatype == "bed":
+            return data.bedfile()
+        elif data.datatype == "bigwig":
+            return data.bigwig()
+        else:
+            return data.bigbed()
 
 def galaxy2(request):
     dataset_number=request.GET['d']
-    extraval = request.GET['v']
-    data = gie.higlass_upload(dataset_number, extraval)
+    val = request.GET['v']
+    data = gie.higlass_upload(dataset_number, extraval = int(val))
     data.genome_loaded()
     data.connect()
     if data.datatype == "bedgraph":
         return data.bedgraph()
     else:
-        return data.cooler()
+        return data.cool()
 
 
 def link(request):
