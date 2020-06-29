@@ -26,8 +26,7 @@ def galaxy(request):
     if data.datatype in need_more:
         return JsonResponse({"datatype": data.datatype})
     else:
-        try:
-            data.genome_loaded()
+        data.genome_loaded()
         data.connect()
         if data.datatype == "mcool":
             return data.mcool()
