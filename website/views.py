@@ -15,7 +15,7 @@ import higlass_server.settings as hss
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, HttpResponse, \
-    HttpResponseNotFound, HttpResponseBadRequest
+    HttpResponseNotFound, HttpResponseBadRequest, JsonResponse
 
 logger = logging.getLogger(__name__)
 
