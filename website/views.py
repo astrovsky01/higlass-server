@@ -7,6 +7,8 @@ import os.path as op
 from pyppeteer import launch
 import tempfile
 
+import website.gie
+
 import tilesets.models as tm
 
 import higlass_server.settings as hss
@@ -17,38 +19,36 @@ from django.http import HttpRequest, HttpResponse, \
 
 logger = logging.getLogger(__name__)
 
-# import manage
-# from bioblend.galaxy import objects
-# from bioblend.galaxy import GalaxyInstance
-# from bioblend.galaxy.histories import HistoryClient
-# from bioblend.galaxy.datasets import DatasetClient
-# import subprocess
-# import argparse
-# import re
-# import os
-# from string import Template
-# import logging
-# DEBUG = os.environ.get('DEBUG', "False").lower() == 'true'
-# if DEBUG:
-#     logging.basicConfig(level=logging.DEBUG)
-# logging.getLogger("bioblend").setLevel(logging.CRITICAL)
-# log = logging.getLogger()
-
-
-# import django
-# os.environ['DJANGO_SETTINGS_MODULE'] = "higlass_server.settings"
-# django.setup()
-
-# import tilesets.management.commands.ingest_tileset as ig
-# from django.core.management import execute_from_command_line
-# import clodius.cli.aggregate as cca
-# import cooler.cli.zoomify as zoomify
-
-
-# logger = logging.getLogger(__name__)
-
 def galaxy(request):
-    return "Helloworld"
+    dataset_number=request.GET['d']
+    data = gie.higlass_upload(dataset_number)
+    need_more = ["bedgraph", "cooler"]
+    if data.datatype in need_more:
+        return JsonResponse({"datatype": data.datatype})
+    else:
+        try:
+            data.genome_loaded()
+        data.connect()
+        if data.datatype == "mcool":
+            return data.mcool()
+        elif data.datatype == "bed":
+            return data.bedfile()
+        elif data.datatype == "bigwig":
+            return data.bigwig()
+        else: 
+            return data.bigbed()
+
+def galaxy2(request):
+    dataset_number=request.GET['d']
+    extraval = request.GET['v']
+    data = gie.higlass_upload(dataset_number, extraval)
+    data.genome_loaded()
+    data.connect()
+    if data.datatype == "bedgraph":
+        return data.bedgraph()
+    else:
+        return data.cooler()
+
 
 def link(request):
     '''Generate a small page containing the metadata necessary for
@@ -193,95 +193,3 @@ async def screenshot(
     })
     await page.screenshot({'path': output_file})
     await browser.close()
-
-
-
-# class higlass_upload:
-
-#     def __init__(self, dataset, data_name, datatype, genome=None):
-#         self.dataset = dataset
-#         self.data_name = data_name
-#         self.datatype = datatype
-#         self.genome = genome
-
-#     ## RETRIEVE DATA FROM GALAXY
-#     def upload(self, reseponse, dataset_id):
-#         '''Takes data from gie.get and moves it to correct location'''
-#         info = galaxy_import(dataset_id)
-#         oldloc = "/import/" + dataset_id
-#         newloc = "/home/higlass/projects/data" + info[dataset_id][0] + info[dataset_id][2]
-#         shutil.move(oldloc, newloc)
-#         return newloc, info[dataset_id][1] #new file location and genome
-
-#     def gie_get(self, dataset_id):
-#         '''Retrieves data and metadata from galaxy'''
-#         gie.get(dataset_id)
-#         info = metadata_info(dataset_id)
-#         return info
-
-#     def _metadata_info(self, datasets_identifiers, identifier_type='hid', history_id=None):
-#         '''Modified version of gie.get, returns metadata of dataset'''
-#         history_id = history_id or os.environ['HISTORY_ID']
-#         metadata = {}
-#         # The object version of bioblend is to slow in retrieving all datasets from a history
-#         # fallback to the non-object path
-#         gi = get_galaxy_connection(history_id=history_id, obj=False)
-#         file_path_all = []
-
-#         if type(datasets_identifiers) is not list:
-#             datasets_identifiers = [datasets_identifiers]
-
-#         if identifier_type == "regex":
-#             datasets_identifiers = find_matching_history_ids(datasets_identifiers)
-#             identifier_type = "hid"
-
-
-#         for dataset_id in datasets_identifiers:
-#             file_path = '/import/%s' % dataset_id
-#             log.debug('Downloading gx=%s history=%s dataset=%s', gi, history_id, dataset_id)
-#             # Cache the file requests. E.g. in the example of someone doing something
-#             # silly like a get() for a Galaxy file in a for-loop, wouldn't want to
-#             # re-download every time and add that overhead.
-#             if not os.path.exists(file_path):
-#                 hc = HistoryClient(gi)
-#                 dc = DatasetClient(gi)
-#                 history = hc.show_history(history_id, contents=True)
-#                 datasets = {ds[identifier_type]: ds['id'] for ds in history}
-                
-#                 #Return name, type and genome for each upload
-#                 if identifier_type == 'hid':
-#                     dataset_id = int(dataset_id)
-#                 metadata[dataset_id] = [dc.show_dataset(datasets[1])['name'],dc.show_dataset(datasets[1])['metadata_dbkey'], dc.show_dataset(datasets[1])['file_ext']]
-#         return metadata
-
-#     def genome_loaded(self):
-#         '''Looks to see if chromosome size data has been uploaded, or if it's available in negspy if not'''
-#         with open("/home/higlass/projects/datatypes.txt", 'r') as t, open("/home/higlass/projects/uploaded.txt", 'r+') as u:
-#             genomedicts = t.read() +  "\n" + u.read()
-#             if self.genome in genomedicts:
-#                 return "Already available"
-#             else:
-#                 u.write("\n")
-#                 u.write(self.genome)
-#                 return self._negspytest()
-
-#     def _negspytest(self):
-#         # Looks to see if genome is available in negspy directory"
-#         genome_loc = "/home/higlass/projects/negspy/negspy/data/" + self.genome + "/chromInfo.txt"
-#         if os.path.isfile(genome_loc):
-#             try:
-#                 ig.ingest(filetype = "chromsizes-tsv", datatype = "chromsizes", coordSystem = self.genome, filename = genome_loc)
-#             except:
-#                 ##print("Could not generate new coordinate system properly")
-#                 return "Could not generate new coordinate system properly"
-#             return True
-#         else:
-#             ##print("Could not locate coordinate system for this file")
-#             return "Could not locate coordinate system for this file"
-
-
-#     def bedfile(self):
-#         outstr = self.file_loc + ".galaxy"
-#         cca._bedfile(self.file_loc, outstr, self.genome, None, False, None, 100, 1024, None, None, 0)
-#         ig.ingest(filename = outstr, filetype = "beddb", datatype = "bedlike", coordSystem = self.genome)
-#         return True

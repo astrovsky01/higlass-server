@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^link/$', views.link),
     url(r'^l/$', views.link),
     url(r'^galaxy/$', views.galaxy),
+    url(r'^galaxy2/$', views.galaxy2),
     url(r'^thumbnail/$', views.thumbnail),
     url(r'^t/$', views.thumbnail)
 ]
